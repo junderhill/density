@@ -4,6 +4,11 @@
 *.dll
 *.so
 *.dylib
+main
+density-darwin-amd64
+density-linux-amd64
+density-darwin-arm64
+density-linux-arm64
 
 # Test binary, built with `go test -c`
 *.test
