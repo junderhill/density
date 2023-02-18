@@ -1,0 +1,61 @@
+name: Go
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.20
+
+    - name: Test
+      run: go test ./...
+
+    - name: Build
+      id: build-go
+      run: |
+        version=`cat version`
+        commit=`git rev-parse --short HEAD`
+        built_at=`date +%FT%T%z`
+        BINARY_NAME="density"
+
+        GOARCH=arm64 GOOS=darwin go build -o $(BINARY_NAME)-darwin-arm64_$(version) -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
+        GOARCH=amd64 GOOS=darwin go build -o $(BINARY_NAME)-darwin-amd64_$(version) -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
+        GOARCH=arm64 GOOS=linux go build -o $(BINARY_NAME)-linux-arm64_$(version) -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
+        GOARCH=amd64 GOOS=linux go build -o $(BINARY_NAME)-linux-amd64_$(version) -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
+
+        echo "::set-output name=darwinfileamd64::${BINARY_NAME}-darwin-amd64_${version}"
+        echo "::set-output name=darwinfilearm64::${BINARY_NAME}-darwin-arm64_${version}"
+        echo "::set-output name=linuxfileamd64::${BINARY_NAME}-linux-amd64_${version}"
+        echo "::set-output name=linuxfilearm64::${BINARY_NAME}-linux-arm64_${version}"
+
+    - name: 'Linux AMD 64 Build'
+      uses: actions/upload-artifact@v3
+      with:
+        name: density_linux_amd64
+        path: ${{ steps.build-go.outputs.linuxfileamd64 }} 
+    - name: 'Linux ARM 64 Build'
+      uses: actions/upload-artifact@v3
+      with:
+        name: density_linux_arm64
+        path: ${{ steps.build-go.outputs.linuxfilearm64 }} 
+    - name: 'Darwin AMD 64 Build'
+      uses: actions/upload-artifact@v3
+      with:
+        name: density_darwin_amd64
+        path: ${{ steps.build-go.outputs.darwinfileamd64 }} 
+    - name: 'Darwin ARM 64 Build'
+      uses: actions/upload-artifact@v3
+      with:
+        name: density_darwin_arm64
+        path: ${{ steps.build-go.outputs.darwinfilearm64 }} 
