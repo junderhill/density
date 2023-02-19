@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/junderhill/density/internal/location"
+	"github.com/junderhill/density/internal/meteoblue"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,6 +34,8 @@ var ShootCmd = &cobra.Command{
 
 		//todo: add some verbose/debug logging (with flag)
 		fmt.Printf("Location: %+v", location)
+
+		_, _ = meteoblue.GetForecast(location)
 
 		panic("not implemented")
 	},
