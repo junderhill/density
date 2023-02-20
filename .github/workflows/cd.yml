@@ -32,18 +32,25 @@ jobs:
         GOARCH=arm64 GOOS=darwin go build -o ${BINARY_NAME}-darwin-arm64_${version} -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
         GOARCH=amd64 GOOS=darwin go build -o ${BINARY_NAME}-darwin-amd64_${version} -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
         GOARCH=arm64 GOOS=linux go build -o ${BINARY_NAME}-linux-arm64_${version} -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
+        GOARM=6 GOARCH=arm GOOS=linux go build -o ${BINARY_NAME}-linux-armv6_${version} -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
         GOARCH=amd64 GOOS=linux go build -o ${BINARY_NAME}-linux-amd64_${version} -ldflags "-X main.commit=${commit} -X main.builtAt='${built_at}' -X main.version='${version}'" cmd/density/main.go
 
         echo "::set-output name=darwinfileamd64::${BINARY_NAME}-darwin-amd64_${version}"
         echo "::set-output name=darwinfilearm64::${BINARY_NAME}-darwin-arm64_${version}"
         echo "::set-output name=linuxfileamd64::${BINARY_NAME}-linux-amd64_${version}"
         echo "::set-output name=linuxfilearm64::${BINARY_NAME}-linux-arm64_${version}"
+        echo "::set-output name=linuxfilearmv6::${BINARY_NAME}-linux-armv6_${version}"
 
     - name: 'Linux AMD 64 Build'
       uses: actions/upload-artifact@v3
       with:
         name: density_linux_amd64
         path: ${{ steps.build-go.outputs.linuxfileamd64 }} 
+    - name: 'Linux ARM (v6) Build'
+      uses: actions/upload-artifact@v3
+      with:
+        name: density_linux_armv6
+        path: ${{ steps.build-go.outputs.linuxfilearmv6 }} 
     - name: 'Linux ARM 64 Build'
       uses: actions/upload-artifact@v3
       with:
