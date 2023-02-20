@@ -63,6 +63,19 @@ func GetForecast(request *ForecastRequest) (*forecast.Forecast, error) {
 	return nil, nil
 }
 
+func ConvertToForecast(meteoblueResponse *meteoblueResponse) *forecast.Forecast {
+	_ = len(meteoblueResponse.Data1H.Time)
+
+	timeWindows := make([]forecast.TimeWindow, 0)
+	for range meteoblueResponse.Data1H.Time {
+		timeWindows = append(timeWindows, forecast.TimeWindow{})
+	}
+
+	return &forecast.Forecast{
+		Times: timeWindows,
+	}
+}
+
 func generateUrl(location *location.Location) string {
 	v := url.Values{}
 	v.Set("apikey", apiKey)
