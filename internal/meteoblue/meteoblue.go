@@ -10,6 +10,7 @@ import (
 
 	"github.com/junderhill/density/internal/forecast"
 	"github.com/junderhill/density/internal/location"
+	"github.com/junderhill/density/internal/persist"
 )
 
 var apiKey string
@@ -22,8 +23,8 @@ func init() {
 	}
 }
 
-func GetForecast(location *location.Location) (*forecast.Forecast, error) {
-	url := generateUrl(location)
+func GetForecast(request *ForecastRequest) (*forecast.Forecast, error) {
+	url := generateUrl(request.Location)
 
 	fmt.Println("Contacting Meteoblue API...")
 
@@ -41,6 +42,14 @@ func GetForecast(location *location.Location) (*forecast.Forecast, error) {
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if request.PersistDir != "" {
+		err := persist.PersistForecastResponse(request.PersistDir, body)
+		if err != nil {
+			//todo: write out err to stderr
+			fmt.Printf("Failed to persist forecast response: %s", err)
+		}
 	}
 
 	var meteoblueResponse meteoblueResponse
