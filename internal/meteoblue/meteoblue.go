@@ -6,24 +6,20 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
+	"time"
 
 	"github.com/junderhill/density/internal/forecast"
 	"github.com/junderhill/density/internal/location"
 	"github.com/junderhill/density/internal/persist"
 )
 
-var apiKey string
+var ApiKey string
 var baseUrl string = "https://my.meteoblue.com/packages/basic-1h_clouds-1h_sunmoon"
 
-func init() {
-	apiKey = os.Getenv("METEOBLUE_API_KEY")
-	if apiKey == "" {
-		panic("METEOBLUE_API_KEY environment variable not set")
-	}
-}
-
 func GetForecast(request *ForecastRequest) (*forecast.Forecast, error) {
+	if ApiKey == "" {
+		return nil, fmt.Errorf("meteoblue api key not set")
+	}
 	url := generateUrl(request.Location)
 
 	fmt.Println("Contacting Meteoblue API...")
@@ -67,8 +63,17 @@ func ConvertToForecast(meteoblueResponse *meteoblueResponse) *forecast.Forecast 
 	_ = len(meteoblueResponse.Data1H.Time)
 
 	timeWindows := make([]forecast.TimeWindow, 0)
-	for range meteoblueResponse.Data1H.Time {
-		timeWindows = append(timeWindows, forecast.TimeWindow{})
+
+	for i, t := range meteoblueResponse.Data1H.Time {
+		time, _ := time.Parse(time.RFC3339, t)
+		timeWindows = append(timeWindows, forecast.TimeWindow{
+			Time:                        time,
+			TemperatureCelcius:          meteoblueResponse.Data1H.Temperature[i],
+			FeelsLikeTemperatureCelcius: meteoblueResponse.Data1H.Felttemperature[i],
+			LowCloudCoverPercent:        meteoblueResponse.Data1H.Lowclouds[i],
+			MedCloudCoverPercent:        meteoblueResponse.Data1H.Midclouds[i],
+			HighCloudCoverPercent:       meteoblueResponse.Data1H.Highclouds[i],
+		})
 	}
 
 	return &forecast.Forecast{
@@ -78,7 +83,7 @@ func ConvertToForecast(meteoblueResponse *meteoblueResponse) *forecast.Forecast 
 
 func generateUrl(location *location.Location) string {
 	v := url.Values{}
-	v.Set("apikey", apiKey)
+	v.Set("apikey", ApiKey)
 	v.Set("lat", fmt.Sprint(location.Latitude))
 	v.Set("lon", fmt.Sprint(location.Longitude))
 	v.Set("format", "json")

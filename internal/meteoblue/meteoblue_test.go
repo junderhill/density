@@ -6,8 +6,10 @@ import (
 	"testing"
 )
 
-func init() {
-	os.Setenv("METEOBLUE_API_KEY", "test")
+func TestMain(m *testing.M) {
+	ApiKey = "test"
+	m.Run()
+	os.Exit(0)
 }
 
 func TestConvertToForecast(t *testing.T) {
@@ -21,6 +23,42 @@ func TestConvertToForecast(t *testing.T) {
 		forecast := ConvertToForecast(&mateoblueResponse)
 		if len(forecast.Times) != len(mateoblueResponse.Data1H.Time) {
 			t.Errorf("Expected %v, got %v", len(mateoblueResponse.Data1H.Time), len(forecast.Times))
+		}
+	})
+
+	t.Run("Each time window has a temperature", func(t *testing.T) {
+		forecast := ConvertToForecast(&mateoblueResponse)
+		for _, timeWindow := range forecast.Times {
+			if timeWindow.TemperatureCelcius != 0.0 {
+				t.Errorf("Expected temperature to be set")
+			}
+		}
+	})
+
+	t.Run("Each time window has a feels like temperature", func(t *testing.T) {
+		forecast := ConvertToForecast(&mateoblueResponse)
+		for _, timeWindow := range forecast.Times {
+			if timeWindow.FeelsLikeTemperatureCelcius != 0.0 {
+				t.Errorf("Expected feels like temperature to be set")
+			}
+		}
+	})
+
+	t.Run("Each time window has a low cloud cover percentage", func(t *testing.T) {
+		forecast := ConvertToForecast(&mateoblueResponse)
+		for _, timeWindow := range forecast.Times {
+			if timeWindow.LowCloudCoverPercent != 0 {
+				t.Errorf("Expected low cloud cover percentage to be set")
+			}
+		}
+	})
+
+	t.Run("Each time window has a high cloud cover percentage", func(t *testing.T) {
+		forecast := ConvertToForecast(&mateoblueResponse)
+		for _, timeWindow := range forecast.Times {
+			if timeWindow.HighCloudCoverPercent != 0 {
+				t.Errorf("Expected high cloud cover percentage to be set")
+			}
 		}
 	})
 }

@@ -7,5 +7,10 @@ type Forecast struct {
 }
 
 type TimeWindow struct {
-	Time time.Time
+	Time                        time.Time
+	TemperatureCelcius          float64
+	FeelsLikeTemperatureCelcius float64
+	LowCloudCoverPercent        int
+	MedCloudCoverPercent        int
+	HighCloudCoverPercent       int
 }

@@ -35,6 +35,8 @@ var ShootCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
+		meteoblue.ApiKey = os.Getenv("METEOBLUE_API_KEY")
+
 		request := meteoblue.ForecastRequest{
 			Location:   location,
 			PersistDir: persistLocation,
